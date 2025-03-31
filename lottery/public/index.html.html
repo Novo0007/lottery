@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Real-Time Lottery Game</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+    body { background: linear-gradient(135deg, #1a1a2e, #16213e); color: #fff; min-height: 100vh; padding: 20px; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    header { text-align: center; margin-bottom: 30px; padding: 20px; background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+    h1 { font-size: 2.5rem; margin-bottom: 10px; background: linear-gradient(90deg, #ff9a9e, #fad0c4, #fad0c4, #a18cd1); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .game-info { display: flex; justify-content: space-around; margin-bottom: 30px; background: rgba(0, 0, 0, 0.3); padding: 15px; border-radius: 10px; flex-wrap: wrap; }
+    .info-box { text-align: center; margin: 5px; }
+    .info-box h3 { font-size: 1.2rem; margin-bottom: 5px; color: #f8f8f8; }
+    .info-box p { font-size: 1.5rem; font-weight: 600; color: #4cc9f0; }
+    .ticket-types { display: flex; justify-content: center; gap: 20px; margin-bottom: 30px; flex-wrap: wrap; }
+    .ticket-card { background: rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 20px; width: 300px; text-align: center; transition: transform 0.3s, box-shadow 0.3s; cursor: pointer; border: 2px solid transparent; }
+    .ticket-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2); }
+    .ticket-card.silver { border-color: #c0c0c0; }
+    .ticket-card.gold { border-color: #ffd700; }
+    .ticket-card.platinum { border-color: #e5e4e2; }
+    .ticket-card h2 { margin-bottom: 15px; font-size: 1.8rem; }
+    .ticket-card.silver h2 { color: #c0c0c0; }
+    .ticket-card.gold h2 { color: #ffd700; }
+    .ticket-card.platinum h2 { color: #e5e4e2; }
+    .price { font-size: 2rem; font-weight: 700; margin-bottom: 15px; }
+    .ticket-card.silver .price { color: #c0c0c0; }
+    .ticket-card.gold .price { color: #ffd700; }
+    .ticket-card.platinum .price { color: #e5e4e2; }
+    .features { margin-bottom: 20px; text-align: left; padding-left: 20px; }
+    .features li { margin-bottom: 8px; list-style-type: disc; }
+    .buy-btn { background: linear-gradient(45deg, #4cc9f0, #4895ef); color: white; border: none; padding: 10px 20px; border-radius: 50px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+    .buy-btn:hover { transform: scale(1.05); box-shadow: 0 5px 15px rgba(72, 149, 239, 0.4); }
+    .ticket-display { background: rgba(0, 0, 0, 0.3); padding: 20px; border-radius: 10px; margin-bottom: 30px; text-align: center; }
+    .ticket-numbers { display: flex; justify-content: center; gap: 15px; margin: 20px 0; flex-wrap: wrap; }
+    .number { width: 50px; height: 50px; background: linear-gradient(45deg, #f72585, #7209b7); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 700; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); }
+    .result-section { background: rgba(0, 0, 0, 0.3); padding: 20px; border-radius: 10px; margin-top: 30px; text-align: center; display: none; }
+    .result-numbers { display: flex; justify-content: center; gap: 15px; margin: 20px 0; flex-wrap: wrap; }
+    .result-number { width: 60px; height: 60px; background: linear-gradient(45deg, #4cc9f0, #4895ef); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 700; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+    .winner-message { font-size: 1.5rem; margin-top: 20px; color: #4cc9f0; font-weight: 600; }
+    .timer { font-size: 1.2rem; margin-top: 10px; color: #f72585; }
+    footer { text-align: center; margin-top: 30px; padding: 20px; background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+    .history-section { background: rgba(0, 0, 0, 0.3); padding: 20px; border-radius: 10px; margin-top: 30px; }
+    .history-item { padding: 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: flex; justify-content: space-between; }
+    .history-item:last-child { border-bottom: none; }
+    .winning-ticket { color: #4cc9f0; font-weight: bold; }
+    .history-title { font-size: 1.5rem; margin-bottom: 15px; text-align: center; }
+    .admin-panel { background: rgba(255, 0, 0, 0.1); padding: 15px; border-radius: 10px; margin-bottom: 20px; display: none; }
+    @media (max-width: 768px) { .ticket-types { flex-direction: column; align-items: center; } .game-info { flex-direction: column; gap: 15px; } .history-item { flex-direction: column; gap: 5px; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Admin Panel (Hidden by default) -->
+    <div class="admin-panel" id="admin-panel">
+      <h3>Admin Controls</h3>
+      <button id="force-draw">Force Draw Now</button>
+      <button id="reset-game">Reset Game</button>
+      <div>
+        <label>Set Draw Interval (hours):</label>
+        <input type="number" id="draw-interval" value="24" min="1">
+        <button id="update-interval">Update</button>
+      </div>
+    </div>
+
+    <header>
+      <h1>Real-Time Lottery Game</h1>
+      <p>Try your luck and win amazing prizes!</p>
+    </header>
+    
+    <div class="game-info">
+      <div class="info-box">
+        <h3>Tickets Sold</h3>
+        <p id="tickets-sold">0</p>
+      </div>
+      <div class="info-box">
+        <h3>Tickets Remaining</h3>
+        <p id="tickets-remaining">20</p>
+      </div>
+      <div class="info-box">
+        <h3>Next Draw In</h3>
+        <p id="next-draw-timer">23:59:59</p>
+      </div>
+      <div class="info-box">
+        <h3>Current Prize</h3>
+        <p id="current-prize">₹10,000</p>
+      </div>
+    </div>
+    
+    <div class="ticket-types">
+      <div class="ticket-card silver" onclick="selectTicket('silver')">
+        <h2>Silver Ticket</h2>
+        <div class="price">₹50</div>
+        <ul class="features">
+          <li>5 random numbers</li>
+          <li>1 in 100 chance to win</li>
+          <li>Prize: 10% of pool</li>
+        </ul>
+        <button class="buy-btn" onclick="event.stopPropagation(); initiatePayment('silver')">Buy Now</button>
+      </div>
+      
+      <div class="ticket-card gold" onclick="selectTicket('gold')">
+        <h2>Gold Ticket</h2>
+        <div class="price">₹200</div>
+        <ul class="features">
+          <li>7 random numbers + 1 letter</li>
+          <li>1 in 50 chance to win</li>
+          <li>Prize: 30% of pool</li>
+        </ul>
+        <button class="buy-btn" onclick="event.stopPropagation(); initiatePayment('gold')">Buy Now</button>
+      </div>
+      
+      <div class="ticket-card platinum" onclick="selectTicket('platinum')">
+        <h2>Platinum Ticket</h2>
+        <div class="price">₹500</div>
+        <ul class="features">
+          <li>10 random numbers + 2 letters</li>
+          <li>1 in 20 chance to win</li>
+          <li>Prize: 60% of pool</li>
+        </ul>
+        <button class="buy-btn" onclick="event.stopPropagation(); initiatePayment('platinum')">Buy Now</button>
+      </div>
+    </div>
+    
+    <div class="ticket-display" id="ticket-display" style="display: none;">
+      <h2>Your Lottery Ticket</h2>
+      <div class="ticket-numbers" id="ticket-numbers"></div>
+      <p>Good luck! Draw results will be announced soon.</p>
+      <div class="timer" id="draw-timer"></div>
+    </div>
+    
+    <div class="result-section" id="result-section">
+      <h2>Draw Results</h2>
+      <div class="result-numbers" id="result-numbers"></div>
+      <div class="winner-message" id="winner-message"></div>
+      <div id="winning-details" style="margin-top: 15px;"></div>
+    </div>
+    
+    <div class="history-section" id="history-section">
+      <h3 class="history-title">Purchase History</h3>
+      <div id="history-items"></div>
+    </div>
+    
+    <footer>
+      <p>© 2023 Real-Time Lottery. All rights reserved.</p>
+      <p>Must be 18+ to play. Play responsibly.</p>
+    </footer>
+  </div>
+
+  <script>
+    // Firebase Configuration (Replace with your config)
+    const firebaseConfig = {
+    apiKey: "AIzaSyBZTxoj6o6w4zDvNuT9m6TfRq_tqi9Vq38",
+    authDomain: "lottery-6c2d8.firebaseapp.com",
+    projectId: "lottery-6c2d8",
+    storageBucket: "lottery-6c2d8.firebasestorage.app",
+    messagingSenderId: "96003830115",
+    appId: "1:96003830115:web:4cab731cf2388fc1d62356",
+    measurementId: "G-KEM0E0GS98"
+  };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+    const auth = firebase.auth();
+
+    // Game Variables
+    const MAX_TICKETS = 20;
+    let selectedTicketType = null;
+    let userTicket = [];
+    let timerInterval;
+    let userId = localStorage.getItem('lotteryUserId') || 'user_' + Math.random().toString(36).substr(2, 9);
+    localStorage.setItem('lotteryUserId', userId);
+
+    // Initialize Game
+    function initGame() {
+      // Check if user is admin (for demo, use ?admin=true in URL)
+      const urlParams = new URLSearchParams(window.location.search);
+      const isAdmin = urlParams.has('admin');
+      if (isAdmin) {
+        document.getElementById('admin-panel').style.display = 'block';
+        setupAdminControls();
+      }
+
+      // Listen for game state changes
+      database.ref('gameState').on('value', (snapshot) => {
+        const gameState = snapshot.val();
+        if (gameState) updateUI(gameState);
+      });
+
+      // Listen for results
+      database.ref('results').on('value', (snapshot) => {
+        const results = snapshot.val();
+        if (results) showResults(results);
+      });
+    }
+
+    // Update UI with Firebase Data
+    function updateUI(gameState) {
+      document.getElementById('tickets-sold').textContent = gameState.ticketsSold || 0;
+      document.getElementById('tickets-remaining').textContent = MAX_TICKETS - (gameState.ticketsSold || 0);
+      document.getElementById('current-prize').textContent = `₹${(gameState.prizePool || 0).toLocaleString('en-IN')}`;
+      updateTimer(gameState.drawTime);
+      renderHistory(gameState.purchaseHistory || []);
+    }
+
+    // Update Timer
+    function updateTimer(drawTime) {
+      clearInterval(timerInterval);
+      if (!drawTime) return;
+      
+      const drawDate = new Date(drawTime);
+      timerInterval = setInterval(() => {
+        const now = new Date();
+        const diff = drawDate - now;
+        
+        if (diff <= 0) {
+          clearInterval(timerInterval);
+          document.getElementById('next-draw-timer').textContent = "Drawing...";
+          return;
+        }
+        
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+        
+        document.getElementById('next-draw-timer').textContent = 
+          `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        
+        if (userTicket.length > 0) {
+          document.getElementById('draw-timer').textContent = 
+            `Results in ${hours}h ${minutes}m ${seconds}s`;
+        }
+      }, 1000);
+    }
+
+    // Render Purchase History
+    function renderHistory(history) {
+      const historyContainer = document.getElementById('history-items');
+      historyContainer.innerHTML = '';
+      
+      if (history.length === 0) {
+        historyContainer.innerHTML = '<p>No tickets purchased yet.</p>';
+        return;
+      }
+      
+      history.slice(0, 10).forEach((ticket) => {
+        const historyItem = document.createElement('div');
+        historyItem.className = 'history-item';
+        historyItem.innerHTML = `
+          <div>
+            <strong>${ticket.type.charAt(0).toUpperCase() + ticket.type.slice(1)} Ticket</strong>
+            <div>${ticket.numbers.join(' - ')}</div>
+          </div>
+          <div>
+            <div>₹${ticket.price}</div>
+            <div style="font-size: 0.8rem;">${new Date(ticket.date).toLocaleString()}</div>
+          </div>
+        `;
+        historyContainer.appendChild(historyItem);
+      });
+    }
+
+    // Generate Ticket (After Payment)
+    function generateTicket(type) {
+      userTicket = [];
+      const numbersContainer = document.getElementById('ticket-numbers');
+      numbersContainer.innerHTML = '';
+      
+      let count = type === 'silver' ? 5 : type === 'gold' ? 7 : 10;
+      let includeLetters = type !== 'silver';
+      let letters = type === 'gold' ? 1 : type === 'platinum' ? 2 : 0;
+      
+      // Generate numbers
+      for (let i = 0; i < count; i++) {
+        const num = Math.floor(Math.random() * 50) + 1;
+        userTicket.push(num.toString());
+        const numberElement = document.createElement('div');
+        numberElement.className = 'number';
+        numberElement.textContent = num;
+        numbersContainer.appendChild(numberElement);
+      }
+      
+      // Generate letters
+      if (includeLetters) {
+        for (let i = 0; i < letters; i++) {
+          const letter = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+          userTicket.push(letter);
+          const letterElement = document.createElement('div');
+          letterElement.className = 'number';
+          letterElement.textContent = letter;
+          numbersContainer.appendChild(letterElement);
+        }
+      }
+      
+      // Save to Firebase
+      const ticketData = {
+        type: type,
+        numbers: [...userTicket],
+        date: new Date().toISOString(),
+        price: type === 'silver' ? 50 : type === 'gold' ? 200 : 500,
+        userId: userId
+      };
+      
+      database.ref('gameState/purchaseHistory').transaction((history) => {
+        history = history || [];
+        history.unshift(ticketData);
+        return history.slice(0, 50);
+      });
+      
+      database.ref('gameState').transaction((gameState) => {
+        gameState = gameState || {};
+        gameState.ticketsSold = (gameState.ticketsSold || 0) + 1;
+        gameState.prizePool = (gameState.prizePool || 0) + ticketData.price;
+        return gameState;
+      });
+      
+      document.getElementById('ticket-display').style.display = 'block';
+      document.getElementById('ticket-display').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Show Results
+    function showResults(results) {
+      const resultContainer = document.getElementById('result-numbers');
+      resultContainer.innerHTML = '';
+      
+      results.winningNumbers.forEach((num) => {
+        const numberElement = document.createElement('div');
+        numberElement.className = 'result-number';
+        numberElement.textContent = num;
+        resultContainer.appendChild(numberElement);
+      });
+      
+      const winnerMessage = document.getElementById('winner-message');
+      const winningDetails = document.getElementById('winning-details');
+      
+      if (results.winningTicket && results.winningTicket.userId === userId) {
+        winnerMessage.textContent = `Congratulations! You won ₹${results.winningAmount.toLocaleString('en-IN')}!`;
+        winnerMessage.style.color = '#4cc9f0';
+        winningDetails.innerHTML = `
+          <p>Winning Ticket: <span class="winning-ticket">${results.winningTicket.numbers.join(' - ')}</span></p>
+          <p>Prize Amount: ₹${results.winningAmount.toLocaleString('en-IN')}</p>
+        `;
+      } else {
+        winnerMessage.textContent = 'Sorry, you didn\'t win this time. Try again!';
+        winnerMessage.style.color = '#f72585';
+        winningDetails.innerHTML = results.winningTicket ? `
+          <p>Winning Ticket: ${results.winningTicket.numbers.join(' - ')}</p>
+          <p>Winner: User ${results.winningTicket.userId.slice(0, 6)}</p>
+        ` : '';
+      }
+      
+      document.getElementById('result-section').style.display = 'block';
+    }
+
+    // Admin Controls
+    function setupAdminControls() {
+      document.getElementById('force-draw').addEventListener('click', () => {
+        if (confirm('Force the draw now?')) performDraw();
+      });
+      
+      document.getElementById('reset-game').addEventListener('click', () => {
+        if (confirm('Reset the entire game?')) {
+          database.ref().set({
+            gameState: {
+              ticketsSold: 0,
+              prizePool: 0,
+              purchaseHistory: [],
+              drawTime: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+            },
+            results: null
+          });
+        }
+      });
+      
+      document.getElementById('update-interval').addEventListener('click', () => {
+        const hours = parseInt(document.getElementById('draw-interval').value) || 24;
+        database.ref('gameState/drawTime').set(new Date(Date.now() + hours * 60 * 60 * 1000).toISOString());
+        alert(`Draw interval updated to ${hours} hours`);
+      });
+    }
+
+    // Perform Draw (Admin Only)
+    function performDraw() {
+      database.ref('gameState').once('value').then((snapshot) => {
+        const gameState = snapshot.val();
+        if (!gameState?.purchaseHistory?.length) {
+          alert('No tickets purchased yet!');
+          return;
+        }
+        
+        const winningTicket = gameState.purchaseHistory[Math.floor(Math.random() * gameState.purchaseHistory.length)];
+        let prizePercentage;
+        
+        if (winningTicket.type === 'silver') prizePercentage = 0.1;
+        else if (winningTicket.type === 'gold') prizePercentage = 0.3;
+        else prizePercentage = 0.6;
+        
+        const winningAmount = Math.floor(gameState.prizePool * prizePercentage);
+        
+        database.ref().update({
+          results: {
+            winningNumbers: winningTicket.numbers,
+            winningTicket: winningTicket,
+            winningAmount: winningAmount,
+            drawTime: new Date().toISOString()
+          },
+          'gameState': {
+            ticketsSold: 0,
+            prizePool: 0,
+            purchaseHistory: [],
+            drawTime: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+          }
+        });
+      });
+    }
+
+    // Razorpay Payment
+    function initiatePayment(ticketType) {
+      if (document.getElementById('tickets-remaining').textContent === '0') {
+        alert('All tickets sold out!');
+        return;
+      }
+      
+      const amount = ticketType === 'silver' ? 1 : ticketType === 'gold' ? 200 : 500;
+      
+      const options = {
+        key: 'rzp_live_X4DZnSdUxCtfV8', // Replace with your key
+        amount: amount * 100,
+        currency: 'INR',
+        name: 'Real-Time Lottery',
+        description: `${ticketType} Ticket Purchase`,
+        handler: function(response) {
+          alert('Payment successful! Generating your ticket...');
+          generateTicket(ticketType);
+        },
+        theme: { color: '#4cc9f0' }
+      };
+      
+      const rzp = new Razorpay(options);
+      rzp.open();
+      rzp.on('payment.failed', (response) => alert('Payment failed. Please try again.'));
+    }
+
+    // Initialize Game
+    window.onload = initGame;
+  </script>
+</body>
+</html>
