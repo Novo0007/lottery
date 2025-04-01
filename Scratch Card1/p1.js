@@ -642,8 +642,8 @@
                 
                 // Set win probabilities and prize amounts based on tier
                 if (ticket.tier === 'silver') {
-                    isWinner = Math.random() < 0.1; // 10% chance
-                    prize = isWinner ? getRandomPrize(10, 500) : 0;
+                    isWinner = Math.random() < 0.3; // 10% chance
+                    prize = isWinner ? getRandomPrize(10, 67) : 0;
                 } else if (ticket.tier === 'gold') {
                     isWinner = Math.random() < 0.01; // 20% chance
                     prize = isWinner ? getRandomPrize(50, 2000) : 0;
