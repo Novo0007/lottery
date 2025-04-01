@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LuckyDraw - Premium Lottery Platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <style>
+  
+    </style>
+    <link rel="stylesheet" href="p1.css">
+</head>
+<body>
+    <div class="container">
+        <header class="animate__animated animate__fadeIn">
+            <h1>LUCKY DRAW LOTTERY</h1>
+            <p class="subtitle">Your chance to win life-changing prizes!</p>
+            
+            <div class="countdown-container">
+                <div class="countdown" id="countdown">
+                    <div class="countdown-item">
+                        <div class="countdown-value" id="hours">00</div>
+                        <div class="countdown-label">Hours</div>
+                    </div>
+                    <div class="countdown-item">
+                        <div class="countdown-value" id="minutes">00</div>
+                        <div class="countdown-label">Minutes</div>
+                    </div>
+                    <div class="countdown-item">
+                        <div class="countdown-value" id="seconds">00</div>
+                        <div class="countdown-label">Seconds</div>
+                    </div>
+                </div>
+            </div>
+        </header>
+        
+        <div class="jackpot-banner pulse">
+            <h3>Current Jackpot</h3>
+            <div class="jackpot-amount">₹1,25,000</div>
+            <p>Next draw: <strong id="nextDrawDate"></strong></p>
+            <div class="progress-container">
+                <div class="progress-bar" style="width: 75%"></div>
+            </div>
+            <p>Tickets sold: 1,245/1,500</p>
+        </div>
+        
+        <div class="lottery-tabs">
+            <button class="tab-btn active" data-tab="scratch">Scratch Cards</button>
+            <button class="tab-btn" data-tab="weekly">Weekly Lottery</button>
+            <button class="tab-btn" data-tab="jackpot">Jackpot Draw</button>
+            <button class="tab-btn" data-tab="future">Future Draws</button>
+        </div>
+        
+        <div class="tab-content active" id="scratch-tab">
+            <div class="ticket-types">
+                <div class="ticket-card silver">
+                    <h3>Silver Ticket</h3>
+                    <div class="price">29</div>
+                    <ul class="features">
+                        <li>1 Instant Scratch Card</li>
+                        <li>Win up to ₹500</li>
+                        <li>10% Winning Chance</li>
+                        <li>Instant Results</li>
+                    </ul>
+                    <button class="btn buy-btn" data-tier="silver" data-price="29">Buy Now</button>
+                </div>
+                
+                <div class="ticket-card gold popular">
+                    <h3>Gold Ticket</h3>
+                    <div class="price">79</div>
+                    <ul class="features">
+                        <li>1 Scratch Cards</li>
+                        <li>Win up to ₹2,000</li>
+                        <li>20% Winning Chance</li>
+                        <li>Free Silver Ticket on Loss</li>
+                        <li>Bonus Entries</li>
+                    </ul>
+                    <button class="btn buy-btn" data-tier="gold" data-price="79">Buy Now</button>
+                </div>
+                
+                <div class="ticket-card platinum">
+                    <h3>Platinum Ticket</h3>
+                    <div class="price">599</div>
+                    <ul class="features">
+                        <li>5 Premium Scratch Cards</li>
+                        <li>Win up to ₹5,000</li>
+                        <li>30% Winning Chance</li>
+                        <li>Free Gold Ticket on Loss</li>
+                        <li>Special Bonus Prizes</li>
+                        <li>Jackpot Entries</li>
+                    </ul>
+                    <button class="btn buy-btn" data-tier="platinum" data-price="599">Buy Now</button>
+                </div>
+                
+                <div class="ticket-card diamond">
+                    <h3>Diamond Ticket</h3>
+                    <div class="price">1,999</div>
+                    <ul class="features">
+                        <li>5 VIP Scratch Cards</li>
+                        <li>Win up to ₹25,000</li>
+                        <li>40% Winning Chance</li>
+                        <li>Free Platinum Ticket on Loss</li>
+                        <li>Guaranteed Wins</li>
+                        <li>Exclusive Jackpot Entries</li>
+                        <li>Priority Support</li>
+                    </ul>
+                    <button class="btn buy-btn" data-tier="diamond" data-price="1999">Buy Now</button>
+                </div>
+            </div>
+            
+            <div class="stats-container">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalTickets">0</div>
+                    <div class="stat-label">Tickets Purchased</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalWins">0</div>
+                    <div class="stat-label">Total Wins</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">₹<span id="totalWinnings">0</span></div>
+                    <div class="stat-label">Total Winnings</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="winRate">0%</div>
+                    <div class="stat-label">Win Rate</div>
+                </div>
+            </div>
+            
+            <div class="my-tickets">
+                <div class="section-header">
+                    <h2>My Scratch Cards</h2>
+                    <div>
+                        <button class="btn btn-outline btn-small" id="redeemAllBtn">Redeem All</button>
+                        <button class="btn btn-outline btn-small" id="clearAllBtn">Clear All</button>
+                    </div>
+                </div>
+                
+                <div class="ticket-grid" id="ticketGrid">
+                    <p id="noTicketsMessage">You don't have any tickets yet. Buy one to get started!</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="weekly-tab">
+            <div class="my-tickets">
+                <h2>Weekly Lottery Draw</h2>
+                <p>Enter our weekly lottery for a chance to win big prizes! Draw happens every Sunday at 8 PM.</p>
+                
+                <div class="ticket-types" style="margin-top: 30px;">
+                    <div class="ticket-card">
+                        <h3>Single Entry</h3>
+                        <div class="price">50</div>
+                        <ul class="features">
+                            <li>1 Weekly Draw Entry</li>
+                            <li>Win up to ₹10,000</li>
+                            <li>Multiple Prize Tiers</li>
+                            <li>Draw every Sunday</li>
+                        </ul>
+                        <button class="btn buy-btn" data-tier="weekly" data-price="50">Buy Entry</button>
+                    </div>
+                    
+                    <div class="ticket-card popular">
+                        <h3>Multi Entry</h3>
+                        <div class="price">200</div>
+                        <ul class="features">
+                            <li>5 Weekly Draw Entries</li>
+                            <li>Win up to ₹50,000</li>
+                            <li>Better Odds</li>
+                            <li>Bonus Scratch Card</li>
+                            <li>Draw every Sunday</li>
+                        </ul>
+                        <button class="btn buy-btn" data-tier="weekly_multi" data-price="200">Buy Entries</button>
+                    </div>
+                    
+                    <div class="ticket-card diamond">
+                        <h3>VIP Entry</h3>
+                        <div class="price">1,000</div>
+                        <ul class="features">
+                            <li>5 Weekly Draw Entries</li>
+                            <li>Win up to ₹2,00,000</li>
+                            <li>Highest Winning Chance</li>
+                            <li>5 Bonus Scratch Cards</li>
+                            <li>Priority Notifications</li>
+                        </ul>
+                        <button class="btn buy-btn" data-tier="weekly_vip" data-price="1000">Buy VIP</button>
+                    </div>
+                </div>
+                
+                <div class="winners-container" style="margin-top: 40px;">
+                    <h2>Last Week's Winners</h2>
+                    <div class="winner-list">
+                        <div class="winner-card">
+                            <div class="winner-avatar">RK</div>
+                            <div class="winner-details">
+                                <h4>Rahul K.</h4>
+                                <div class="winner-prize">₹10,000</div>
+                                <small>Gold Ticket</small>
+                            </div>
+                        </div>
+                        <div class="winner-card">
+                            <div class="winner-avatar">PM</div>
+                            <div class="winner-details">
+                                <h4>Priya M.</h4>
+                                <div class="winner-prize">₹5,000</div>
+                                <small>Silver Ticket</small>
+                            </div>
+                        </div>
+                        <div class="winner-card">
+                            <div class="winner-avatar">AS</div>
+                            <div class="winner-details">
+                                <h4>Amit S.</h4>
+                                <div class="winner-prize">₹2,500</div>
+                                <small>Weekly Entry</small>
+                            </div>
+                        </div>
+                        <div class="winner-card">
+                            <div class="winner-avatar">NK</div>
+                            <div class="winner-details">
+                                <h4>Neha K.</h4>
+                                <div class="winner-prize">₹1,000</div>
+                                <small>Weekly Entry</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="jackpot-tab">
+            <div class="my-tickets">
+                <h2>Mega Jackpot Draw</h2>
+                <p>Our biggest prize pool! One lucky winner takes home the entire jackpot amount.</p>
+                
+                <div class="jackpot-banner" style="background: linear-gradient(135deg, #f6d365, #fda085); margin: 30px 0;">
+                    <h3>Current Jackpot</h3>
+                    <div class="jackpot-amount">₹5,75,000</div>
+                    <p>Next draw: <strong>Sunday, 8 PM</strong></p>
+                    <div class="progress-container">
+                        <div class="progress-bar" style="width: 65%"></div>
+                    </div>
+                    <p>Tickets sold: 650/1,000</p>
+                </div>
+                
+                <div class="ticket-types">
+                    <div class="ticket-card">
+                        <h3>Standard Entry</h3>
+                        <div class="price">100</div>
+                        <ul class="features">
+                            <li>1 Jackpot Draw Entry</li>
+                            <li>Chance to win entire jackpot</li>
+                            <li>Draw when all tickets sold</li>
+                            <li>Minimum ₹5,00,000 prize</li>
+                        </ul>
+                        <button class="btn buy-btn" data-tier="jackpot" data-price="100">Buy Entry</button>
+                    </div>
+                    
+                    <div class="ticket-card popular">
+                        <h3>Multi Entry</h3>
+                        <div class="price">450</div>
+                        <ul class="features">
+                            <li>5 Jackpot Draw Entries</li>
+                            <li>5x Better Chance</li>
+                            <li>Bonus Weekly Entry</li>
+                            <li>Draw when all tickets sold</li>
+                        </ul>
+                        <button class="btn buy-btn" data-tier="jackpot_multi" data-price="450">Buy Entries</button>
+                    </div>
+                    
+                    <div class="ticket-card diamond">
+                        <h3>VIP Package</h3>
+                        <div class="price">4,999</div>
+                        <ul class="features">
+                            <li>17 Jackpot Draw Entries</li>
+                            <li>Best Chance to Win</li>
+                            <li>5 Weekly Entries</li>
+                            <li>10 Scratch Cards</li>
+                            <li>Priority Notifications</li>
+                        </ul>
+                        <button class="btn buy-btn" data-tier="jackpot_vip" data-price="4999">Buy VIP</button>
+                    </div>
+                </div>
+                
+                <div class="winners-container" style="margin-top: 40px;">
+                    <h2>Previous Jackpot Winners</h2>
+                    <div class="winner-list">
+                        <div class="winner-card">
+                            <div class="winner-avatar">SK</div>
+                            <div class="winner-details">
+                                <h4>Sanjay P.</h4>
+                                <div class="winner-prize">₹3,50,000</div>
+                                <small>15 May 2023</small>
+                            </div>
+                        </div>
+                        <div class="winner-card">
+                            <div class="winner-avatar">AM</div>
+                            <div class="winner-details">
+                                <h4>Anjali M.</h4>
+                                <div class="winner-prize">₹2,75,000</div>
+                                <small>22 March 2023</small>
+                            </div>
+                        </div>
+                        <div class="winner-card">
+                            <div class="winner-avatar">VP</div>
+                            <div class="winner-details">
+                                <h4>Vikram P.</h4>
+                                <div class="winner-prize">₹4,10,000</div>
+                                <small>10 January 2023</small>
+                            </div>
+                        </div>
+                        <div class="winner-card">
+                            <div class="winner-avatar">RS</div>
+                            <div class="winner-details">
+                                <h4>Riya S.</h4>
+                                <div class="winner-prize">₹3,00,000</div>
+                                <small>5 December 2022</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="future-tab">
+            <div class="my-tickets">
+                <h2>Upcoming Special Draws</h2>
+                <p>Mark your calendar for these exciting upcoming lottery events with special prizes.</p>
+                
+                <div class="future-draws">
+                    <div class="future-draw-card">
+                        <div class="draw-date">15 August 2023</div>
+                        <h3>Independence Day Special</h3>
+                        <div class="draw-prize">₹7,50,000 Grand Prize</div>
+                        <p>Celebrate Independence Day with our biggest draw of the year! Special bonus prizes for all participants.</p>
+                        <button class="btn btn-outline" style="margin-top: 15px;">Notify Me</button>
+                    </div>
+                    
+                    <div class="future-draw-card">
+                        <div class="draw-date">2 October 2023</div>
+                        <h3>Gandhi Jayanti Draw</h3>
+                        <div class="draw-prize">₹5,00,000 Grand Prize</div>
+                        <p>Special charity draw where 10% of proceeds go to education charities.</p>
+                        <button class="btn btn-outline" style="margin-top: 15px;">Notify Me</button>
+                    </div>
+                    
+                    <div class="future-draw-card">
+                        <div class="draw-date">31 December 2023</div>
+                        <h3>New Year's Eve Mega Draw</h3>
+                        <div class="draw-prize">₹10,00,000 Grand Prize</div>
+                        <p>Ring in the new year with our largest ever prize pool! Multiple winners will be selected.</p>
+                        <button class="btn btn-outline" style="margin-top: 15px;">Notify Me</button>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 40px; text-align: center;">
+                    <h3>Subscribe to Lottery Alerts</h3>
+                    <p>Get notified about upcoming draws and special events</p>
+                    <div style="display: flex; max-width: 500px; margin: 20px auto;">
+                        <input type="email" placeholder="Enter your email" style="flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 50px 0 0 50px; border-right: none;">
+                        <button class="btn" style="border-radius: 0 50px 50px 0;">Subscribe</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Payment Modal -->
+    <div class="modal" id="paymentModal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Complete Your Purchase</h2>
+            <p>You're buying a <strong id="selectedTier"></strong> for ₹<strong id="selectedPrice"></strong></p>
+            
+            <div class="payment-methods">
+                <div class="payment-method active" data-method="upi">
+                    <i class="fas fa-mobile-alt"></i>
+                    <div>UPI</div>
+                </div>
+                <div class="payment-method" data-method="card">
+                    <i class="far fa-credit-card"></i>
+                    <div>Credit/Debit</div>
+                </div>
+                <div class="payment-method" data-method="netbanking">
+                    <i class="fas fa-university"></i>
+                    <div>Net Banking</div>
+                </div>
+                <div class="payment-method" data-method="wallet">
+                    <i class="fas fa-wallet"></i>
+                    <div>Wallets</div>
+                </div>
+            </div>
+            
+            <div class="payment-form">
+                <div class="form-group">
+                    <label for="name">Full Name</label>
+                    <input type="text" id="name" placeholder="Enter your full name">
+                </div>
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" placeholder="Enter your email">
+                </div>
+                <div class="form-group">
+                    <label for="phone">Mobile Number</label>
+                    <input type="tel" id="phone" placeholder="Enter 10-digit mobile number">
+                </div>
+                
+                <div id="upiFields" class="payment-fields">
+                    <div class="form-group">
+                        <label for="upiId">UPI ID</label>
+                        <input type="text" id="upiId" placeholder="yourname@upi">
+                    </div>
+                </div>
+                
+                <div id="cardFields" class="payment-fields" style="display: none;">
+                    <div class="form-group">
+                        <label for="cardNumber">Card Number</label>
+                        <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456">
+                    </div>
+                    <div style="display: flex; gap: 15px;">
+                        <div class="form-group" style="flex: 1;">
+                            <label for="expiry">Expiry Date</label>
+                            <input type="text" id="expiry" placeholder="MM/YY">
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label for="cvv">CVV</label>
+                            <input type="text" id="cvv" placeholder="123">
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="netbankingFields" class="payment-fields" style="display: none;">
+                    <div class="form-group">
+                        <label for="bank">Select Bank</label>
+                        <select id="bank">
+                            <option value="">Select your bank</option>
+                            <option value="sbi">State Bank of India</option>
+                            <option value="hdfc">HDFC Bank</option>
+                            <option value="icici">ICICI Bank</option>
+                            <option value="axis">Axis Bank</option>
+                            <option value="other">Other Banks</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div id="walletFields" class="payment-fields" style="display: none;">
+                    <div class="form-group">
+                        <label for="wallet">Select Wallet</label>
+                        <select id="wallet">
+                            <option value="">Select your wallet</option>
+                            <option value="paytm">Paytm</option>
+                            <option value="phonepe">PhonePe</option>
+                            <option value="amazonpay">Amazon Pay</option>
+                            <option value="mobikwik">MobiKwik</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group" style="margin-top: 25px;">
+                    <input type="checkbox" id="terms" style="width: auto; display: inline; margin-right: 10px;">
+                    <label for="terms" style="display: inline;">I agree to the <a href="#" style="color: var(--primary);">Terms & Conditions</a></label>
+                </div>
+                
+                <button class="btn" id="payNowBtn" style="width: 100%; padding: 15px; font-size: 1.1rem;">
+                    <i class="fas fa-lock" style="margin-right: 10px;"></i>Pay Securely
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Winning Modal -->
+    <div class="modal" id="winningModal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div style="text-align: center;">
+                <div style="font-size: 5rem; color: var(--success); margin-bottom: 20px;">
+                    <i class="fas fa-trophy"></i>
+                </div>
+                <h2>Congratulations!</h2>
+                <p style="font-size: 1.2rem; margin: 20px 0;">You've won <strong style="font-size: 1.5rem; color: var(--success);">₹<span id="winAmount">0</span></strong>!</p>
+                <p>Your winnings have been credited to your account balance.</p>
+                <button class="btn" style="margin-top: 30px;" id="claimBtn">Claim Your Prize</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        <i class="fas fa-check-circle"></i>
+        <span id="notificationText">Ticket purchased successfully!</span>
+    </div>
+    
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script>
+ 
+    </script>
+    <script src="p1.js"></script>
+</body>
+</html>
